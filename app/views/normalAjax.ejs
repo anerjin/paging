@@ -23,7 +23,13 @@
 
   <script type="text/javascript">
   'use strict';
+  // 브라우저 이벤트 체크용 플래그 (게시물 클릭 이외에는 세션스토리지 삭제)
+  var $browserEvent = false;
 
+  // 링크 클릭 시 true
+  $(document).on("click",".container a, .pagination a",function(){
+    $browserEvent = true;
+  });
   $(function() {
     // 세션 스토리지에 페이지 번호를 저장했기에 있으면 세션스토리지 값부터 페이지 번호 없으면 1부터 시작.
     var currentState = sessionStorage.getItem('$page');
@@ -62,6 +68,14 @@
       $('.pagination li').remove();
       loadItem($page);
     });
+
+    // 링크 빼고 브라우저 이벤트 일 시 세션스토리지 삭제
+    window.onbeforeunload = function () {
+      // 플래그가 false일 때만
+      if ($browserEvent === false) {
+        sessionStorage.clear();
+      }
+    };
 
   });
 
