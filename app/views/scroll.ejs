@@ -1,0 +1,194 @@
+<% include header %>
+
+<h1><%=title%></h1>
+
+  <div class="masonry">
+    <div class="sizer"></div>
+  </div>
+
+
+
+
+
+  <div id="Menu" style="display:none;">
+    <div class="fixed-action-btn horizontal">
+      <a class="btn-floating btn-large waves-effect waves-light teal lighten-2">
+      <i class="material-icons">arrow_upward</i>
+      </a>
+    </div>
+  </div>
+
+  <div class="layer" style="display:none;">
+    <div class="preloader-wrapper big active">
+          <div class="spinner-layer spinner-blue">
+            <div class="circle-clipper left">
+              <div class="circle"></div>
+            </div><div class="gap-patch">
+              <div class="circle"></div>
+            </div><div class="circle-clipper right">
+              <div class="circle"></div>
+            </div>
+          </div>
+
+          <div class="spinner-layer spinner-red">
+            <div class="circle-clipper left">
+              <div class="circle"></div>
+            </div><div class="gap-patch">
+              <div class="circle"></div>
+            </div><div class="circle-clipper right">
+              <div class="circle"></div>
+            </div>
+          </div>
+
+          <div class="spinner-layer spinner-yellow">
+            <div class="circle-clipper left">
+              <div class="circle"></div>
+            </div><div class="gap-patch">
+              <div class="circle"></div>
+            </div><div class="circle-clipper right">
+              <div class="circle"></div>
+            </div>
+          </div>
+
+          <div class="spinner-layer spinner-green">
+            <div class="circle-clipper left">
+              <div class="circle"></div>
+            </div><div class="gap-patch">
+              <div class="circle"></div>
+            </div><div class="circle-clipper right">
+              <div class="circle"></div>
+            </div>
+          </div>
+        </div>
+  </div>
+
+
+  <script type="text/javascript">
+  'use strict';
+  // 브라우저 이벤트 체크용 플래그
+  var $browserEvent = false;
+
+  // 게시물 클릭 시 true
+  $(document).on("click",".masonry a",function(){
+    $browserEvent = true;
+  });
+
+  $(function() {
+    // init Masonry
+    var $masonry = $('.masonry').masonry({
+      itemSelector: '.items',
+      columnWidth: '.sizer',
+      percentPosition: true
+    });
+
+    // $masonry.imagesLoaded(function() {
+    //   $masonry.masonry('layout');
+    // });
+
+    $masonry.imagesLoaded().progress( function() {
+      $masonry.masonry('layout');
+    });
+
+    $(window).scroll(function(){
+      if ($(this).scrollTop() > 500) {
+        $('#Menu').show();
+      } else {
+        $('#Menu').hide();
+        if ($('.click-to-toggle').hasClass('active')) {
+          $('.click-to-toggle').removeClass('active');
+        }
+      }
+    });
+
+    $('#Menu').on("click",function() {
+          $('html,body').animate({
+            scrollTop:0
+          }, 1000);
+    });
+
+    // 세션 스토리지에 페이지 번호를 저장했기에 있으면 세션스토리지 값부터 페이지 번호 없으면 1부터 시작.
+    var currentState = sessionStorage.getItem('$scroll');
+    if (currentState != null) {
+      var $page = Number(currentState);
+      $('.items').remove();
+      $('.masonry').html(sessionStorage.getItem('$scrollList'));
+    } else {
+      var $page = 1;
+      InfinityFlow($page);
+    }
+
+    // 무한 스크롤 이벤트 (IE는 스크롤 이벤트가 다르게 먹기 때문에 ajaxready라는 flag 설정)
+    $(window).data('ajaxready', true).scroll(function(e) {
+      if ($(window).data('ajaxready') == false) return;
+      if ($(window).scrollTop() >= ($(document).height() - $(window).height())) {
+          $(window).data('ajaxready', false);
+          $page = $page + 1;
+          $('.layer').fadeIn();
+          setTimeout(function () {
+            InfinityFlow($page);
+            $('.layer').fadeOut();
+          }, 1500);
+      }
+    });
+
+    // 링크 빼고 브라우저 이벤트 일 시 세션스토리지 삭제
+    window.onbeforeunload = function () {
+      // 플래그가 false일 때만
+      if ($browserEvent === false) {
+        sessionStorage.clear();
+      }
+    };
+
+  });
+
+  // 해당 페이지 값을 받아서 리스트를 추가 ajax 함수
+  function InfinityFlow(Page){
+    $.ajax({
+      url: '/scroll',
+      type: 'post',
+      data : {'page': Page},
+      success:function(Data){
+        if(Data.result){
+          var $item = $.map(Data.articles.contents, function(Article, Index) {
+            return '<div class="items  '+masonryHeight(Index)+'">'
+              +'<a href="/view/'+Article._id+'"><img class="image" src="'+Article.image+'" /></a>'
+              +'<div class="overlay">'
+                +'<h2><a href="/view/'+Article._id+'">'+Article.title+'</a></h2>'
+              +'</div></div>'
+            }).join('');
+            // 갖고 온 리스트 추가
+            $('.masonry').append( $item );
+            $( '.masonry' ).masonry( 'reloadItems' );
+            $( '.masonry' ).masonry( 'layout' );
+           // 세션 스토리지에 현재 페이지 저장
+           sessionStorage.setItem('$scroll', Page);
+           // 세션 스토리지에 전체 리스트 저장
+           sessionStorage.setItem('$scrollList', $('.masonry').html());
+           // 현재 페이지가 마지막 페이지면 취소
+           if (Page == Data.articles.pnTotal) {
+             $(window).data('ajaxready', false);
+           } else {
+             $(window).data('ajaxready', true);
+           }
+        } else {
+          $('.masonry').append('등록된 글이 없습니다.');
+        }
+      },
+      error:function(request,status,error){
+        console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
+      }
+    });
+  }
+
+  function masonryHeight(val) {
+
+    if (val % 6 == 0) {
+      return 'impact';
+    } else {
+      return '';
+    }
+  }
+
+  </script>
+
+<% include footer %>

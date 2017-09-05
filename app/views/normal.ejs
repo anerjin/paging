@@ -1,0 +1,54 @@
+<% include header %>
+
+<h1><%=title%></h1>
+<div class="container">
+  <div class="row">
+    <table class="bordered">
+         <thead>
+           <tr>
+               <th>제목</th>
+               <th>글</th>
+           </tr>
+         </thead>
+         <tbody>
+          <% if (articles.contents.length != 0) { %>
+            <% articles.contents.forEach(function(Article){ %>
+              <tr>
+                <td><a href="/view/<%=Article._id%>"><%=Article.title%></a></td>
+                <td><a href="/view/<%=Article._id%>"><%=Article.text%></a></td>
+              </tr>
+            <% }); %>
+          <% } else { %>
+            <tr>
+              <td>등록된 글이 없습니다.</td>
+            </tr>
+          <% } %>
+         </tbody>
+    </table>
+  </div>
+</div>
+
+  <% if (articles.contents.length != 0) { %>
+  <div class="" style="text-align:center;">
+    <ul class="pagination">
+     <li <%if(articles.pageNum == 1){%> class="disabled" <%}else{%>class="waves-effect"<%}%> >
+       <a <%if(articles.pageNum > 1){%> href="?page=<%=articles.pageNum-1%>" <%}%>>
+         <i class="material-icons">chevron_left</i>
+       </a>
+     </li>
+
+    <% for(var i=articles.pnStart; i<=articles.pnEnd; i++){ %>
+      <li <%if(i===articles.pageNum){%> class="active" <%}%>><a href="?page=<%=i%>"><%=i%></a></li>
+    <% } %>
+
+     <li <%if(articles.pageNum == articles.pnTotal){%> class="disabled" <%}else{%> class="waves-effect" <%}%>>
+       <a <%if(articles.pageNum < articles.pnTotal){%> href="?page=<%=articles.pageNum+1%>" <%}%> class="waves-effect">
+       <i class="material-icons">chevron_right</i>
+     </a>
+   </li>
+   </ul>
+  </div>
+  <% } %>
+
+
+<% include footer %>

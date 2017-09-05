@@ -1,0 +1,181 @@
+<% include header %>
+
+<h1><%=title%></h1>
+<div class="container">
+</div>
+
+
+<div id="Menu" style="display:none;">
+  <div class="fixed-action-btn horizontal click-to-toggle">
+    <a class="btn-floating btn-large waves-effect waves-light teal lighten-2">
+    <i class="material-icons">menu</i>
+    </a>
+    <ul>
+    <li id="Add"><a class="btn-floating purple darken-1"><i class="material-icons">add</i></a></li>
+    <li id="Up"><a class="btn-floating cyan lighten-4"><i class="material-icons">arrow_upward</i></a></li>
+    </ul>
+  </div>
+</div>
+
+
+
+  <div class="layer" style="display:none;">
+    <div class="preloader-wrapper big active">
+          <div class="spinner-layer spinner-blue">
+            <div class="circle-clipper left">
+              <div class="circle"></div>
+            </div><div class="gap-patch">
+              <div class="circle"></div>
+            </div><div class="circle-clipper right">
+              <div class="circle"></div>
+            </div>
+          </div>
+
+          <div class="spinner-layer spinner-red">
+            <div class="circle-clipper left">
+              <div class="circle"></div>
+            </div><div class="gap-patch">
+              <div class="circle"></div>
+            </div><div class="circle-clipper right">
+              <div class="circle"></div>
+            </div>
+          </div>
+
+          <div class="spinner-layer spinner-yellow">
+            <div class="circle-clipper left">
+              <div class="circle"></div>
+            </div><div class="gap-patch">
+              <div class="circle"></div>
+            </div><div class="circle-clipper right">
+              <div class="circle"></div>
+            </div>
+          </div>
+
+          <div class="spinner-layer spinner-green">
+            <div class="circle-clipper left">
+              <div class="circle"></div>
+            </div><div class="gap-patch">
+              <div class="circle"></div>
+            </div><div class="circle-clipper right">
+              <div class="circle"></div>
+            </div>
+          </div>
+        </div>
+  </div>
+
+
+<script type="text/javascript">
+  'use strict';
+  // 브라우저 이벤트 체크용 플래그 (게시물 클릭 이외에는 세션스토리지 삭제)
+  var $browserEvent = false;
+
+  // 게시물 클릭 시 true
+  $(document).on("click",".container a",function(){
+    $browserEvent = true;
+  });
+
+  $(function() {
+    // 스크롤 바닥일 시 메뉴 추가 (더보기 및 위로 스크롤)
+    $(window).scroll(function(e) {
+      if ($(window).scrollTop() >= ($(document).height() - $(window).height())) {
+          $('#Menu').show();
+      } else {
+        $('#Menu').hide();
+        if ($('.click-to-toggle').hasClass('active')) {
+          $('.click-to-toggle').removeClass('active');
+        }
+      }
+    });
+    // 클릭 시 위로 스크롤
+    $('#Up').on("click",function() {
+          $('html,body').animate({
+            scrollTop:0
+          }, 1000);
+    });
+
+    // 세션 스토리지에 페이지 번호를 저장했기에 있으면 세션스토리지 값부터 페이지 번호 없으면 1부터 시작.
+    var currentState = sessionStorage.getItem('$add');
+    if (currentState != null) {
+      var $page = Number(currentState);
+      $('.row').remove();
+      $('.container').html(sessionStorage.getItem('$addList'));
+    } else {
+      var $page = 1;
+      loadItem($page);
+    }
+
+    // 더 보기 버튼 클릭
+    $(document).on("click","#Add",function(e){
+      e.preventDefault();
+      // 마지막 페이지가 아닐 시에만 실행
+      if (!$('#Add').hasClass("disabled")) {
+        $page = $page + 1;
+        $('.layer').fadeIn();
+        setTimeout(function () {
+          loadItem($page);
+          $('.layer').fadeOut();
+        }, 1500);
+      }
+    });
+
+    // 링크 빼고 브라우저 이벤트 일 시 세션스토리지 삭제
+    window.onbeforeunload = function () {
+      // 플래그가 false일 때만
+      if ($browserEvent === false) {
+        sessionStorage.clear();
+      }
+    };
+
+  });
+
+
+
+
+  // 해당 페이지 값을 받아서 리스트를 추가 ajax 함수
+  function loadItem(Page){
+    $.ajax({
+      url: '/add',
+      type: 'post',
+      data : {'page': Page},
+      success:function(Data){
+        if(Data.result){
+          var $item = $.map(Data.articles.contents, function(Article) {
+            return '<div class="row"><div class="col s12 m8 offset-m2 l6 offset-l3">'
+            +'<div class="card-panel grey lighten-5 z-depth-1">'
+              +'<div class="row valign-wrapper">'
+                +'<div class="col s2">'
+                  +'<a href="/view/'+Article._id+'"><img src="'+Article.image+'" alt="" class="responsive-img"></a>'
+                +'</div>'
+                +'<div class="col s10">'
+                  +'<span class="black-text">'
+                    +'<a href="/view/'+Article._id+'">'+Article.title+'</a>'
+                  +'</span>'
+                +'</div>'
+              +'</div>'
+            +'</div>'
+          +'</div></div>'
+            }).join('');
+            // 갖고 온 리스트 추가
+           $('.container').append($item);
+           // 세션 스토리지에 현재 페이지 저장
+           sessionStorage.setItem('$add',Page);
+           // 세션 스토리지에 전체 리스트 저장
+           sessionStorage.setItem('$addList',$('.container').html());
+           // 현재 페이지가 마지막 페이지면 클래스 추가
+           if (Page == Data.articles.pnTotal) {
+             $('#Add').addClass('disabled');
+           } else {
+             $('#Add').removeClass('disabled');
+           }
+        } else {
+          $('.container').append('등록된 글이 없습니다.');
+        }
+      },
+      error:function(request,status,error){
+        console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
+      }
+    });
+  }
+
+</script>
+<% include footer %>

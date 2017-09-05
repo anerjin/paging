@@ -1,0 +1,140 @@
+<% include header %>
+
+<h1><%=title%></h1>
+<div class="container">
+  <div class="row">
+    <table class="bordered">
+         <thead>
+           <tr>
+               <th>제목</th>
+               <th>글</th>
+           </tr>
+         </thead>
+         <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="" style="text-align:center;">
+  <ul class="pagination"></ul>
+</div>
+
+
+
+  <script type="text/javascript">
+  'use strict';
+
+  $(function() {
+    // 세션 스토리지에 페이지 번호를 저장했기에 있으면 세션스토리지 값부터 페이지 번호 없으면 1부터 시작.
+    var currentState = sessionStorage.getItem('$page');
+    if (currentState != null) {
+      var $page = Number(currentState);
+      loadItem(Number(currentState));
+    } else {
+      var $page = 1;
+      loadItem($page);
+    }
+    // >를 클릭했을 시 다음 리스트 및 페이지네이션 처리
+    $(document).on("click",".pagination li:last-child",function(e){
+      e.preventDefault();
+      // 마지막 페이지가 아닐 시에만 실행
+      if (!$('.pagination li:last-child').hasClass("disabled")) {
+        $page = $page + 1;
+        $('.pagination li').remove();
+        loadItem($page);
+      }
+    });
+    // <를 클릭했을 시 이전 리스트 및 페이지네이션 처리
+    $(document).on("click",".pagination li:first-child",function(e){
+      e.preventDefault();
+      // 처음 페이지가 아닐 시에만 실행
+      if (!$('.pagination li:first-child').hasClass("disabled")) {
+        $page = $page - 1;
+        $('.pagination li').remove();
+        loadItem($page);
+      }
+    });
+    // 페이지네이션의 번호를 눌렀을 시 리스트 및 페이지네이션 처리
+    $(document).on("click",".pn",function(e){
+      e.preventDefault();
+      var $this = $(this).text();
+      $page = Number($this);
+      $('.pagination li').remove();
+      loadItem($page);
+    });
+
+  });
+
+    // 해당 페이지 값을 받아서 리스트를 갖고 오는 ajax 함수
+    function loadItem(Page){
+      $.ajax({
+        url: '/normalAjax',
+        type: 'post',
+        data : {'page': Page},
+        success:function(Data){
+          if(Data.result){
+            $('tr').remove(); // 테이블 리스트 초기화
+            var $item = $.map(Data.articles.contents, function(Article) {
+              return '<tr>'
+              +'<td><a href="/view/'+Article._id+'">'+Article.title+'</a></td>'
+              +'<td><a href="/view/'+Article._id+'">'+Article.text+'</a></td>'
+              +'</tr>'
+              }).join('');
+              // 갖고 온 리스트 추가
+             $('tbody').append($item);
+             // 해당 페이지의 페이지네이션 처리
+             pagination(Data.articles.pnStart, Data.articles.pnEnd, Page, Data.articles.pnTotal);
+             // 세션 스토리지에 현재 페이지 저장
+             sessionStorage.setItem('$page',Page);
+          } else {
+            $('tbody').append('<tr><td colspan="2">등록된 글이 없습니다.</td></tr>');
+          }
+        },
+        error:function(request,status,error){
+          console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
+        }
+      });
+    }
+    // 해당 페이지의 페이지네이션 처리 함수
+    function pagination(Start, End, Page, Total) {
+      // 처음 페이지면 disabled 클래스 추가
+      if (Page == 1) {
+        $('.pagination').append('<li class="disabled">'
+          +'<a href="#">'
+            +'<i class="material-icons">chevron_left</i>'
+          +'</a>'
+        +'</li>');
+      } else {
+        $('.pagination').append('<li>'
+          +'<a href="#">'
+            +'<i class="material-icons">chevron_left</i>'
+          +'</a>'
+        +'</li>');
+      }
+      // 페이지네이션 정보 loop
+      for (var i = Start; i <= End; i++) {
+        if (i == Page) {
+          $('.pagination').append('<li class="active pn"><a href="#">'+i+'</a></li>');
+        } else {
+          $('.pagination').append('<li class="pn"><a href="#">'+i+'</a></li>');
+        }
+      }
+      // 마지막 페이지면 disabled 클래스 추가
+      if (Page == Total) {
+        $('.pagination').append('<li class="disabled">'
+          +'<a href="#">'
+            +'<i class="material-icons">chevron_right</i>'
+          +'</a>'
+        +'</li>');
+      } else {
+        $('.pagination').append('<li>'
+          +'<a href="#">'
+            +'<i class="material-icons">chevron_right</i>'
+          +'</a>'
+        +'</li>');
+      }
+    }
+  </script>
+
+
+<% include footer %>
