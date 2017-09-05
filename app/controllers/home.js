@@ -198,13 +198,14 @@ router.post('/add', function (req, res) {
   );
 });
 
+// 무한 스크롤 Ajax 페이징
 router.get('/scroll', function (req, res) {
   res.render('scroll',{
-    title: 'Masonry + infinite scroll 테스트'
+    title: 'Masonry + Infinite Scroll'
   });
 });
 
-// 더 보기 Ajax 페이징 처리
+// 무한 스크롤 Ajax 페이징 처리
 router.post('/scroll', function (req, res) {
   // 현재 페이지 번호 값을 받습니다.
   var pageNum = req.body.page;
