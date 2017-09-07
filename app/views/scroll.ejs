@@ -76,19 +76,17 @@
   $(function() {
     // init Masonry
     var $masonry = $('.masonry').masonry({
-      itemSelector: '.items',
-      columnWidth: '.sizer',
-      percentPosition: true
+      itemSelector: '.items', // 적용할 컨텐츠의 클래스명
+      columnWidth: '.sizer', // 사이즈 크기를 정의한 클래스명
+      percentPosition: true // responsive용이면 작성
     });
 
-    // $masonry.imagesLoaded(function() {
-    //   $masonry.masonry('layout');
-    // });
-
+    // 이미지를 붙일려면 imagesLoaded 라는 라이브러리를 추가로 받아서 참조해야 합니다.
     $masonry.imagesLoaded().progress( function() {
       $masonry.masonry('layout');
     });
 
+    // 일정 스크롤 이하 시 맨 위로 올라가게 하는 버튼 나오게 하는 부분
     $(window).scroll(function(){
       if ($(this).scrollTop() > 500) {
         $('#Menu').show();
@@ -99,7 +97,7 @@
         }
       }
     });
-
+    // 버튼 클릭 시 스크롤 위로 이동
     $('#Menu').on("click",function() {
           $('html,body').animate({
             scrollTop:0
@@ -131,6 +129,7 @@
       }
     });
 
+
     // 링크 빼고 브라우저 이벤트 일 시 세션스토리지 삭제
     window.onbeforeunload = function () {
       // 플래그가 false일 때만
@@ -156,7 +155,7 @@
                 +'<h2><a href="/view/'+Article._id+'">'+Article.title+'</a></h2>'
               +'</div></div>'
             }).join('');
-            // 갖고 온 리스트 추가
+            // 갖고 온 리스트 추가 masonry 메소드를 사용해서 추가해야 화면이 안깨집니다.
             $('.masonry').append( $item );
             $( '.masonry' ).masonry( 'reloadItems' );
             $( '.masonry' ).masonry( 'layout' );
@@ -179,7 +178,7 @@
       }
     });
   }
-
+  // 특정 이미지 하이트 영역 늘리는 클래스 추가 함수
   function masonryHeight(val) {
 
     if (val % 6 == 0) {
