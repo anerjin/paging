@@ -4,6 +4,7 @@
 ## Build
 * [generator-express](https://github.com/petecoop/generator-express) {EJS, Mongoose}
 * [Materialize CSS](http://materializecss.com/)
+* [Masonry](https://masonry.desandro.com/) {무한 스크롤에서 사용}
 
 ## 데모
 * [일반 페이징 (+페이지네이션)](https://delrynhub.com/paging)
