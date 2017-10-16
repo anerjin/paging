@@ -8,7 +8,7 @@
 
 
 
-
+<div class="box" style="display:none;"></div>
 
   <div id="Menu" style="display:none;">
     <div class="fixed-action-btn horizontal">
@@ -121,9 +121,11 @@
       if ($(window).scrollTop() >= ($(document).height() - $(window).height())) {
           $(window).data('ajaxready', false);
           $page = $page + 1;
+          $('.box').show();
           $('.layer').fadeIn();
           setTimeout(function () {
             InfinityFlow($page);
+            $('.box').hide();
             $('.layer').fadeOut();
           }, 1500);
       }

@@ -17,7 +17,7 @@
   </div>
 </div>
 
-
+<div class="box" style="display:none;"></div>
 
   <div class="layer" style="display:none;">
     <div class="preloader-wrapper big active">
@@ -86,7 +86,7 @@
         }
       }
     });
-    
+
     // 클릭 시 위로 스크롤
     $('#Up').on("click",function() {
           $('html,body').animate({
@@ -111,9 +111,11 @@
       // 마지막 페이지가 아닐 시에만 실행
       if (!$('#Add').hasClass("disabled")) {
         $page = $page + 1;
+        $('.box').show();
         $('.layer').fadeIn();
         setTimeout(function () {
           loadItem($page);
+          $('.box').hide();
           $('.layer').fadeOut();
         }, 1500);
       }
